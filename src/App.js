@@ -23,15 +23,17 @@ function App() {
       <div>
         <h1>My React App with Routing</h1>
 
+
         <Routes>
+
           <Route path="/home" element={<Home />} />
           <Route path="/blog" element={<Blogs />} />
           <Route  path="/save" element={<Contact  />} />
-         
+         <Route path="/edit/:id" element={<EditProduct />} />
         </Routes>
         
       </div>
-<Footer />
+{/* <Footer /> */}
     </div>
   );
 }

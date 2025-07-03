@@ -3,109 +3,65 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const EditProduct = () => {
-  const [users, setUsers] = useState([]);
-  const [formData, setFormData] = useState({ marketName: "", location: "" ,customerCare: "", email: "", managerName: "", managerId: ""});
-  const [editingId, setEditingId] = useState(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  // Fetch all users (READ)
+  const [formData, setFormData] = useState({ marketName: '', location: '', customerCare: '', email: '', managerName: '', managerId: ''  });
+
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetch(`/product/${id}`)
+      .then(res => res.json())
+      .then(user => setFormData({ marketName: user.marketName, location: user.location, customerCare: user.customerCare, email: user.email, managerName: user.managerName, managerId: user.managerId }))
+      .catch(err => console.error('Error fetching user:', err));
+  }, [id]);
 
-  const fetchUsers = async () => {
-    const res = await axios.get("http://localhost:8081/product/viewDevDetails/users");
-    setUsers(res.data);
+  const handleChange = (e) => {
+    const { marketName, value } = e.target;
+    setFormData(prev => ({ ...prev, [marketName]: value }));
   };
 
-  // Create or Update user
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (editingId) {
-      // Update
-      await axios.put(`http://localhost:8081/product/users/${editingId}`, formData);
-    } else {
-      // Create
-      await axios.post("http://localhost:8081/product/users", formData);
-    }
-
-    setFormData({ marketName: "", location: "",customerCare: "",email: "",managerName: "",managerId: "" });
-    setEditingId(null);
-    fetchUsers();
-  };
-
-  // Delete
-  const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:8081/product/users/${id}`);
-    fetchUsers();
-  };
-
-  // Prepare form for edit
-  const handleEdit = (user) => {
-    setFormData({ marketName: user.marketName, location: user.location,customerCare: user.customerCare,email: user.email,managerName: user.managerName,managerId: user.managerId });
-    setEditingId(user.id);
+    fetch(`/product/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to update user');
+        navigate('/');
+      })
+      .catch(err => console.error('Error updating user:', err));
   };
 
   return (
     <div>
-      <h2>User Management</h2>
+      <h2>Edit User</h2>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={formData.marketName}
-          onChange={(e) => setFormData({ ...formData, marketName: e.target.value })}
-          placeholder="marketName"
-          required
-        />
-        <input
-          type="text"
-          value={formData.location}
-          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-          placeholder="location"
-          required
-        />
-        <input
-          type="number"
-          value={formData.customerCare}
-          onChange={(e) => setFormData({ ...formData, customerCare: e.target.value })}
-          placeholder="customerCare"
-          required
-        />
-        <input
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="email"
-          required
-        />
-        <input
-          type="text"
-          value={formData.managerName}
-          onChange={(e) => setFormData({ ...formData, managerName: e.target.value })}
-          placeholder="managerName"
-          required
-        />
-        <input
-          type="number"
-          value={formData.managerId}
-          onChange={(e) => setFormData({ ...formData, managerId: e.target.value })}
-          placeholder="managerId"
-          required
-        />
-        <button type="submit">{editingId ? "Update" : "Create"}</button>
+        <label>
+         Market Name: <input name="marketName" value={formData.marketName} onChange={handleChange} />
+        </label><br /><br />
+        <label>
+          Location: <input name="location" type="text" value={formData.location} onChange={handleChange} />
+        </label><br /><br />
+          <label>
+         Customer Care: <input name="customerCare" value={formData.customerCare} onChange={handleChange} />
+        </label><br /><br />
+          <label>
+         Email: <input name="email" value={formData.email} onChange={handleChange} />
+        </label><br /><br />
+          <label>
+         Manager Name: <input name="managerName" value={formData.managerName} onChange={handleChange} />
+        </label><br /><br />
+          <label>
+        managerId: <input name="managerId" value={formData.managerId} onChange={handleChange} />
+        </label><br /><br />
+        <button type="submit">Save</button>
+        <button type="button" onClick={() => navigate('/')}>Cancel</button>
       </form>
-
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>
-            {user.marketName} ({user.location}) ({user.customerCare}) ({user.email}) ({user.managerName}) ({user.managerId})
-            <button onClick={() => handleEdit(user)}>Edit</button>
-            <button onClick={() => handleDelete(user.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };
+
 
 export default EditProduct;
