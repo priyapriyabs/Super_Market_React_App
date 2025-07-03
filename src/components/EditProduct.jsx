@@ -1,37 +1,56 @@
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const EditProduct = () => {
   const { id } = useParams();
+  const { state } = useLocation(); // ✅ access passed state
+  const { post, allPosts } = state || {}; // fallback if undefined
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ marketName: '', location: '', customerCare: '', email: '', managerName: '', managerId: ''  });
 
   useEffect(() => {
-    fetch(`/product/${id}`)
-      .then(res => res.json())
-      .then(user => setFormData({ marketName: user.marketName, location: user.location, customerCare: user.customerCare, email: user.email, managerName: user.managerName, managerId: user.managerId }))
-      .catch(err => console.error('Error fetching user:', err));
-  }, [id]);
+    if (post) {
+      // Use passed post data if available
+      setFormData({
+        marketName: post.marketName,
+        location: post.location,
+        customerCare: post.customerCare,
+        email: post.email,
+        managerName: post.managerName,
+        managerId: post.managerId
+      });
+    } else {
+      // Otherwise fetch from backend
+      axios.get(`/product/${id}`)
+        .then(res => {
+          const user = res.data;
+          setFormData({
+            marketName: user.marketName,
+            location: user.location,
+            customerCare: user.customerCare,
+            email: user.email,
+            managerName: user.managerName,
+            managerId: user.managerId
+          });
+        })
+        .catch(err => console.error('Error fetching user:', err));
+    }
+  }, [id, post]);
 
   const handleChange = (e) => {
-    const { marketName, value } = e.target;
-    setFormData(prev => ({ ...prev, [marketName]: value }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetch(`/product/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to update user');
-        navigate('/');
-      })
-      .catch(err => console.error('Error updating user:', err));
+    axios.put(`/product/${id}`, formData)
+      .then(() => navigate('/'))
+      .catch(err => console.error('Error updating user:', err)
+    
+    );
   };
 
   return (

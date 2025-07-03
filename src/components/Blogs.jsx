@@ -4,7 +4,7 @@ import { Table } from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
-const Blogs = () => {
+const Blogs = ({ posts }) => {
  
    const [data, setData] = useState([]);
    const [loading, setLoading] = useState(true);
@@ -28,10 +28,10 @@ const Blogs = () => {
     const [editRowId, setEditRowId] = useState(null); // ID of the row being edited
   const [editFormData, setEditFormData] = useState({ marketName: '', location: '', customerCare: '', email: '', managerName: '', managerId: '' });
 
-const handleEditClick = (post) => {
+const handleEditClick = (post, allPosts) => {
     setEditRowId(post.id);
     setEditFormData({ marketName: post.marketName, location: post.location,customerCare: post.customerCare,email: post.email,managerName: post.managerName,managerId: post.managerId });
-  navigate(`/edit/${post.id}`);
+    navigate(`/edit/${post.id}`, { state: { post, allPosts } });
   };
 
 
@@ -83,7 +83,7 @@ const handleEditClick = (post) => {
               <td>{post.managerId}</td>
                <button onClick={() => handleDelete(post.id)}>Delete</button>
               <td>
-                  <button onClick={() => handleEditClick(post)}>Edit</button>
+                  <button onClick={() => handleEditClick(post,posts)}>Edit</button>
                 </td>
 
             </tr>
